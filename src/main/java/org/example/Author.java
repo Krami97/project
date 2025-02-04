@@ -2,24 +2,25 @@ package org.example;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class Autor {
+public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
     public String name;
 
-    @OneToMany(mappedBy = "autor")
+    @OneToMany(mappedBy = "author")
     public Set<Book> books;
 
     @ManyToMany
     @JoinTable(name = "autor_publiser",
             joinColumns = @JoinColumn(name="autor_id"),
     inverseJoinColumns = @JoinColumn(name = "publisehr_id"))
-    public Set<Publisher> publishers;
+    public Set<Publisher> publishers  =  new HashSet<>();
 
     public Long getId() {
         return id;
@@ -53,6 +54,6 @@ public class Autor {
         this.publishers.add(publisher);
     }
 
-    public Autor() {
+    public Author() {
     }
 }

@@ -12,7 +12,7 @@ public class Book {
 
     @ManyToOne
     @JoinColumn(name="autor_id")
-    public Autor autor;
+    public Author author;
 
     public Long getId() {
         return id;
@@ -30,12 +30,12 @@ public class Book {
         this.title = title;
     }
 
-    public Autor getAutor() {
-        return autor;
+    public Author getAutor() {
+        return author;
     }
 
-    public void setAutor(Autor autor) {
-        this.autor = autor;
+    public void setAutor(Author author) {
+        this.author = author;
     }
 
     public Book() {

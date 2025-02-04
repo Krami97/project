@@ -18,7 +18,7 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
 
         <!-- Registracija entiteta -->
-        <mapping class="org.example.Autor"/>
+        <mapping class="org.example.Author"/>
         <mapping class="org.example.Book"/>
         <mapping class="org.example.Publisher"/>
 

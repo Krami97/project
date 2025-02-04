@@ -2,6 +2,7 @@ package org.example;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -13,7 +14,7 @@ public class Publisher {
     public String name;
 
     @ManyToMany(mappedBy = "publishers")
-    public Set<Autor> autors;
+    public Set<Author> authors =  new HashSet<>();;
 
     public Long getId() {
         return id;
@@ -31,12 +32,12 @@ public class Publisher {
         this.name = name;
     }
 
-    public Set<Autor> getAutors() {
-        return autors;
+    public Set<Author> getAutors() {
+        return authors;
     }
 
-    public void setAutors(Autor autor) {
-        this.autors.add(autor);
+    public void setAutors(Author author) {
+        this.authors.add(author);
     }
 
     public Publisher() {

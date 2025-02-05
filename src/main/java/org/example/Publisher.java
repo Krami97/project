@@ -14,7 +14,7 @@ public class Publisher {
     public String name;
 
     @ManyToMany(mappedBy = "publishers")
-    public Set<Author> authors =  new HashSet<>();;
+    public Set<Book> books =  new HashSet<>();;
 
     public Long getId() {
         return id;
@@ -32,12 +32,12 @@ public class Publisher {
         this.name = name;
     }
 
-    public Set<Author> getAutors() {
-        return authors;
+    public Set<Book> getBooks() {
+        return books;
     }
 
-    public void setAutors(Author author) {
-        this.authors.add(author);
+    public void setBooks(Book book) {
+        this.books.add(book);
     }
 
     public Publisher() {

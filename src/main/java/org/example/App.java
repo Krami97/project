@@ -1,207 +1,169 @@
 package org.example;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
 
-import java.sql.SQLOutput;
-import java.util.List;
-import java.util.NoSuchElementException;
+
 import java.util.Scanner;
 
-
 public class App {
-    private static final EntityManagerFactory emf = JpaUtil.buildEntityManagerFactory();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int choice;
-        long bookID;
-        Book book = null;
-        do {
-            System.out.println("Odaberite:");
-            System.out.println("1 ispis autora i njihovih knjiga ");
-            System.out.println("2 arzuriranje naslova knjige ");
-            System.out.println("3 za brisanje knjige po Id");
-            choice = scanner.nextInt();
+        int userChoice;
+        do{
+            System.out.println("Odaberi:");
+            System.out.println("1 za Hibernate");
+            System.out.println("2 za JPA");
+            System.out.println("0 za izlaz iz porgrama");
+            userChoice = scanner.nextInt();
             scanner.nextLine();
-
-            switch (choice) {
+            switch (userChoice){
                 case 1:
-                    ispisAutoraIKnjiga();
+                    hibernateCRUD();
                     break;
                 case 2:
-                    System.out.println("Unesitie id knjige koju zelite azurirati:");
-                    bookID= scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.println("Unestie novi naslov knjige:");
-                    String newTitle = scanner.nextLine();
-                    book  = vratiKnjiguPoID(bookID);
-                    azuriranjeNaslovaKnjige(book,newTitle);
+                    JPA_CRUD();
+                    break;
+                default:
+                    System.out.println("krivi unos");
+            }
+
+        }while(userChoice!= 0);
+
+        if(JPAUtil.getEmf().isOpen()){
+            JPAUtil.closeEmf();
+        }
+
+
+        if (HibernateUtil.getSf().isOpen()) {
+            HibernateUtil.closeSf();
+
+        }
+    }
+
+    public static void hibernateCRUD(){
+        Scanner scanner = new Scanner(System.in);
+        int userChoice;
+        do{
+            System.out.println("Odaberite:");
+            System.out.println("1 za kriranje narudbe sa proizvodima");
+            System.out.println("2 za ispis svih narudbi i proizvoda u njima");
+            System.out.println("3 dohvatati narudbu po broju narudbe");
+            System.out.println("4 za  brisanje proizvodda iz odredene naudbe");
+            System.out.println("5 za dodavanje proizvoda u postojecu narudbu");
+            System.out.println("6 za brisanje narudbi i pripadajucih proizvoda");
+            System.out.println("0 za izlaz iz HibernateCRUD");
+
+            userChoice = scanner.nextInt();
+            scanner.nextLine();
+            long orderID;
+            long productID;
+            String orderNumber;
+            switch (userChoice){
+                case 1:
+                    HibernateCRUD.CreateOrderWithProducts();
+                case 2:
+                    HibernateCRUD.PrintOrderANDProducts();
                     break;
                 case 3:
-                    System.out.println("Unesite id knjige koju zelite obirsati");
-                    bookID = scanner.nextInt();
+                    System.out.println("Unesi borj nardbe");
+                    orderNumber = scanner.nextLine();
+                    ProductOrder order = HibernateCRUD.GetProductOrderWithProducts(orderNumber);
+                    HibernateCRUD.printOrderProducts(order);
+                    break;
+                case 4:
+                    System.out.println("Unesi id narudbe u kojoj se proizvod nalazi:");
+                    orderID = scanner.nextInt();
                     scanner.nextLine();
-                    book = vratiKnjiguPoID(bookID);
-                    deleteBook(book);
-
+                    System.out.println("Unesi id prozivoda koji zelis izbrisatti");
+                    productID = scanner.nextInt();
+                    scanner.nextLine();
+                    HibernateCRUD.DeleteProductFromOrder(orderID,productID);
+                    break;
+                case 5:
+                    System.out.println("Unesi broj narudbe kojoj zelis dodati proizvod:");
+                    orderNumber = scanner.nextLine();
+                    System.out.println("Unesi naziv proizvoda koji zelis dodati narubi");
+                    String productName = scanner.nextLine();
+                    ProductOrder productOrder = HibernateCRUD.GetProductOrderWithProducts(orderNumber);
+                    Product product = HibernateCRUD.creteProduct(productName,productOrder);
+                    System.out.println(product.getName()+ "dodan u "+ productOrder.getOrederNumber() + " naurudbu");
+                    break;
+                case 6:
+                    System.out.println("Unesi broj narudbe koju zelis izbriaati zajedno sa proizvodima");
+                    orderNumber = scanner.nextLine();
+                    HibernateCRUD.deleteOrderAndProducts(orderNumber);
+                    break;
+                default:
+                    System.out.println("krivi unos");
             }
 
-        } while (choice!=0);
-
-        JpaUtil.closeEntityManagerFactory();
-
-
-    }
-
-    public static void kriranjeEntiteta() {
-        Author author1 = new Author();
-        author1.setName("Pero");
-        Author author2 = new Author();
-        author2.setName("Marko");
-
-        Publisher publisher1 = new Publisher();
-        publisher1.setName("NarodneNovine");
-        Publisher publisher2 = new Publisher();
-        publisher2.setName("SkolskaKnjiga");
-
-        Book book1 = new Book();
-        book1.setTitle("Perina prica 1");
-        book1.setAuthor(author1);
-        book1.setPublishers(publisher1);
-        Book book2 = new Book();
-        book2.setTitle("Perina prica 2");
-        book2.setAuthor(author1);
-        book2.setPublishers(publisher1);
-
-
-        Book book3 = new Book();
-        book3.setTitle("Markova prica 1");
-        book3.setAuthor(author2);
-        book3.setPublishers(publisher2);
-        Book book4 = new Book();
-        book4.setTitle("Markova prica 2");
-        book4.setAuthor(author2);
-        book4.setPublishers(publisher2);
-        EntityManager em = JpaUtil.buildEntityManager();
-
-        try {
-            em.getTransaction().begin();
-
-            em.persist(author1);
-            em.persist(author2);
-            em.persist(publisher1);
-            em.persist(publisher2);
-            em.persist(book1);
-            em.persist(book2);
-            em.persist(book3);
-            em.persist(book4);
-
-            em.getTransaction().commit();
-
-
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            em.close();
-        }
-    }
-
-    public static List<Author> vratiSveAutore() {
-        EntityManager em = JpaUtil.buildEntityManager();
-        try {
-            em.getTransaction().begin();
-            String jsql = "SELECT a FROM Author a";
-            TypedQuery<Author> query = em.createQuery(jsql, Author.class);
-            List<Author> authors = query.getResultList();
-            return authors;
-
-        } catch (Exception e) {
-
-            throw new NoSuchElementException();
+        }while (userChoice!=0);
 
         }
+    public static void JPA_CRUD(){
+        Scanner scanner = new Scanner(System.in);
+        int userChoice;
+        do{
+            System.out.println("Odaberite:");
+            System.out.println("1 za kriranje narudbe sa proizvodima");
+            System.out.println("2 za ispis svih narudbi i proizvoda u njima");
+            System.out.println("3 dohvatati narudbu po broju narudbe");
+            System.out.println("4 za  brisanje proizvodda iz odredene naudbe");
+            System.out.println("5 za dodavanje proizvoda u postojecu narudbu");
+            System.out.println("6 za brisanje narudbi i pripadajucih proizvoda");
+            System.out.println("0 za izlaz iz HibernateCRUD");
 
-    }
-
-    public static void ispisAutoraIKnjiga() {
-        List<Author> authors = vratiSveAutore();
-
-
-        for (Author author : authors) {
-            System.out.println(author.getName());
-            for (Book book : author.getBooks()) {
-                System.out.println(book.getTitle());
+            userChoice = scanner.nextInt();
+            scanner.nextLine();
+            long orderID;
+            long productID;
+            String orderNumber;
+            switch (userChoice){
+                case 1:
+                    JPACRUD.CreateOrderWithProducts();
+                case 2:
+                    JPACRUD.PrintOrderANDProducts();
+                    break;
+                case 3:
+                    System.out.println("Unesi borj nardbe");
+                    orderNumber = scanner.nextLine();
+                    ProductOrder order = JPACRUD.GetProductOrderWithProducts(orderNumber);
+                    JPACRUD.printOrderProducts(order);
+                    break;
+                case 4:
+                    System.out.println("Unesi id narudbe u kojoj se proizvod nalazi:");
+                    orderID = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.println("Unesi id prozivoda koji zelis izbrisatti");
+                    productID = scanner.nextInt();
+                    scanner.nextLine();
+                    JPACRUD.DeleteProductFromOrder(orderID,productID);
+                    break;
+                case 5:
+                    System.out.println("Unesi broj narudbe kojoj zelis dodati proizvod:");
+                    orderNumber = scanner.nextLine();
+                    System.out.println("Unesi naziv proizvoda koji zelis dodati narubi");
+                    String productName = scanner.nextLine();
+                    ProductOrder productOrder = JPACRUD.GetProductOrderWithProducts(orderNumber);
+                    Product product = JPACRUD.creteProduct(productName,productOrder);
+                    System.out.println(product.getName()+ "dodan u "+ productOrder.getOrederNumber() + " naurudbu");
+                    break;
+                case 6:
+                    System.out.println("Unesi broj narudbe koju zelis izbriaati zajedno sa proizvodima");
+                    orderNumber = scanner.nextLine();
+                    JPACRUD.deleteOrderAndProducts(orderNumber);
+                    break;
+                default:
+                    System.out.println("krivi unos");
             }
 
-        }
+        }while (userChoice!=0);
+
     }
 
-    public static void azuriranjeNaslovaKnjige(Book book, String newTitle) {
-        EntityManager em = JpaUtil.buildEntityManager();
-        try {
-            em.getTransaction().begin();
-            String jsql = "UPDATE Book b SET b.title =:title WHERE b.id =:id";
-            Query query = em.createQuery(jsql);
-            query.setParameter("title", newTitle);
-            query.setParameter("id", book.getId());
-            int rowsAffected = query.executeUpdate();
-            System.out.println("Naslov azuriran " + rowsAffected);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            em.close();
-        }
-    }
-
-    public static Book vratiKnjiguPoID(Long bookId) {
-        EntityManager em = JpaUtil.buildEntityManager();
-        try{
-            em.getTransaction().begin();
-            Book book = em.find(Book.class,bookId);
-            em.getTransaction().commit();
-            System.out.println("originalni naslov"+ book.getTitle());
-            return book;
-
-        }catch (Exception e){
-            if (em.getTransaction().isActive()){
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        }finally {
-            em.close();
-        }
-
-        return null;
-    }
-    public static void deleteBook(Book book){
-        EntityManager em  = JpaUtil.buildEntityManager();
-         try{
-             em.getTransaction().begin();
-             Book mergedBook = em.merge(book);
-             em.remove(mergedBook);
-             em.getTransaction().commit();
-             System.out.println("knjiga obrisana!");
-
-         }catch (Exception e){
-             if(em.getTransaction().isActive()){
-                 em.getTransaction().rollback();
-             }
-             e.printStackTrace();
-         }finally {
-             em.close();
-         }
-    }
 
 }
+
+
 
 
 

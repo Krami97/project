@@ -7,7 +7,7 @@
     <session-factory>
         <!-- JDBC konfiguracija -->
         <property name="hibernate.connection.driver_class">com.microsoft.sqlserver.jdbc.SQLServerDriver</property>
-        <property name="hibernate.connection.url">jdbc:sqlserver://localhost:1433;databaseName=AdventureWorksOBP;encrypt=true;trustServerCertificate=true</property>
+        <property name="hibernate.connection.url">jdbc:sqlserver://localhost:1433;databaseName=JavaAdv;encrypt=true;trustServerCertificate=true</property>
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.connection.password">password</property>
 
@@ -18,8 +18,9 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
 
         <!-- Registracija entiteta -->
-        <mapping class="org.example.ProductOrder"/>
-        <mapping class="org.example.Product"/>
+        <mapping class="org.example.Polaznik"/>
+        <mapping class="org.example.ProgramObrazovanja"/>
+        <mapping class="org.example.Upis"/>
 
 
     </session-factory>

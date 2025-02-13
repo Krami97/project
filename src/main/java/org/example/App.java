@@ -1,36 +1,83 @@
 package org.example;
 
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
 import java.util.Scanner;
 
 public class App {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int userChoice;
-        do{
-            System.out.println("Odaberi:");
-            System.out.println("1 za Hibernate");
-            System.out.println("2 za JPA");
-            System.out.println("0 za izlaz iz porgrama");
-            userChoice = scanner.nextInt();
+        int odabir;
+        long IDPolaznika, IDProgramaObrazovanja,UpisID,CSVET;
+
+
+        do {
+            System.out.println("Odaberite:");
+            System.out.println("1 za usnos novog Polaznika");
+            System.out.println("2 za unos programa obrazovanja");
+            System.out.println("3 za upis polaznika u program obrazovanja");
+            System.out.println("4 za promjenu programa obrazovanja");
+            System.out.println("5 za ispis svih polaznika porgrama obrazovanja");
+            System.out.println("0 za izlaz");
+            odabir = scanner.nextInt();
             scanner.nextLine();
-            switch (userChoice){
+
+            switch (odabir) {
                 case 1:
-                    hibernateCRUD();
+                    String ime, prezime;
+                    System.out.println("Unesite ime polaznika:");
+                    ime = scanner.nextLine();
+                    System.out.println("Unesite ime polaznika:");
+                    prezime = scanner.nextLine();
+                    UnosNovogPolaznika(ime,prezime);
                     break;
                 case 2:
-                    JPA_CRUD();
+                    String Naziv;
+                    System.out.println("Unestie naziv programa obrazovanja:");
+                    Naziv = scanner.nextLine();
+                    System.out.println("Unestie CSVET bodove programa obrazovanja:");
+                    CSVET = scanner.nextInt();
+                    scanner.nextLine();
+                    UnosNovogProgramaObrazovanja(Naziv,CSVET);
+                    break;
+                case 3:
+
+                    System.out.println("Unsi id polaznika kojeg zelis upisti:");
+                    IDPolaznika =  scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.println("Unesi id programa obrazovanja na koji zelis upisati polaznika: ");
+                    IDProgramaObrazovanja =  scanner.nextInt();
+                    scanner.nextLine();
+                    UpisPolaznikaUProgramObrazovanja(IDPolaznika,IDProgramaObrazovanja);
+                    break;
+                case 4:
+
+                    System.out.println("Uneste id upisa:");
+                    UpisID =  scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.println("Uneste id novog program obrazovanja:");
+                    IDProgramaObrazovanja =  scanner.nextInt();
+                    scanner.nextLine();
+                    PrebacivanjePolaznika(IDProgramaObrazovanja,UpisID);
+                    break;
+                case 5:
+                    System.out.println("Unestie id programa obrazovanja");
+                    IDProgramaObrazovanja =  scanner.nextInt();
+                    scanner.nextLine();
+                    ispisPolaznikaProgramObrazovanja(IDProgramaObrazovanja);
                     break;
                 default:
-                    System.out.println("krivi unos");
+                    System.out.println("Krivi unos");
+
+
             }
 
-        }while(userChoice!= 0);
 
-        if(JPAUtil.getEmf().isOpen()){
-            JPAUtil.closeEmf();
-        }
+        }while(odabir!=0);
+
 
 
         if (HibernateUtil.getSf().isOpen()) {
@@ -38,126 +85,151 @@ public class App {
 
         }
     }
+    public static void UnosNovogPolaznika(String ime, String prezime){
+        Transaction transaction = null;
+        Session session = null;
+        try {
+            session = HibernateUtil.createHibernateSession();
+            transaction = session.beginTransaction();
+            Polaznik polaznik = new Polaznik();
+            polaznik.setIme(ime);
+            polaznik.setPrezime(prezime);
+            session.persist(polaznik);
+            transaction.commit();
+            System.out.println("Uspjesan unos novog polaznika");
 
-    public static void hibernateCRUD(){
-        Scanner scanner = new Scanner(System.in);
-        int userChoice;
-        do{
-            System.out.println("Odaberite:");
-            System.out.println("1 za kriranje narudbe sa proizvodima");
-            System.out.println("2 za ispis svih narudbi i proizvoda u njima");
-            System.out.println("3 dohvatati narudbu po broju narudbe");
-            System.out.println("4 za  brisanje proizvodda iz odredene naudbe");
-            System.out.println("5 za dodavanje proizvoda u postojecu narudbu");
-            System.out.println("6 za brisanje narudbi i pripadajucih proizvoda");
-            System.out.println("0 za izlaz iz HibernateCRUD");
-
-            userChoice = scanner.nextInt();
-            scanner.nextLine();
-            long orderID;
-            long productID;
-            String orderNumber;
-            switch (userChoice){
-                case 1:
-                    HibernateCRUD.CreateOrderWithProducts();
-                case 2:
-                    HibernateCRUD.PrintOrderANDProducts();
-                    break;
-                case 3:
-                    System.out.println("Unesi borj nardbe");
-                    orderNumber = scanner.nextLine();
-                    ProductOrder order = HibernateCRUD.GetProductOrderWithProducts(orderNumber);
-                    HibernateCRUD.printOrderProducts(order);
-                    break;
-                case 4:
-                    System.out.println("Unesi id narudbe u kojoj se proizvod nalazi:");
-                    orderID = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.println("Unesi id prozivoda koji zelis izbrisatti");
-                    productID = scanner.nextInt();
-                    scanner.nextLine();
-                    HibernateCRUD.DeleteProductFromOrder(orderID,productID);
-                    break;
-                case 5:
-                    System.out.println("Unesi broj narudbe kojoj zelis dodati proizvod:");
-                    orderNumber = scanner.nextLine();
-                    System.out.println("Unesi naziv proizvoda koji zelis dodati narubi");
-                    String productName = scanner.nextLine();
-                    ProductOrder productOrder = HibernateCRUD.GetProductOrderWithProducts(orderNumber);
-                    Product product = HibernateCRUD.creteProduct(productName,productOrder);
-                    System.out.println(product.getName()+ "dodan u "+ productOrder.getOrederNumber() + " naurudbu");
-                    break;
-                case 6:
-                    System.out.println("Unesi broj narudbe koju zelis izbriaati zajedno sa proizvodima");
-                    orderNumber = scanner.nextLine();
-                    HibernateCRUD.deleteOrderAndProducts(orderNumber);
-                    break;
-                default:
-                    System.out.println("krivi unos");
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
             }
+            e.printStackTrace();
 
-        }while (userChoice!=0);
+        } finally {
+            if (session != null) {
+                session.close();
+            }
 
         }
-    public static void JPA_CRUD(){
-        Scanner scanner = new Scanner(System.in);
-        int userChoice;
-        do{
-            System.out.println("Odaberite:");
-            System.out.println("1 za kriranje narudbe sa proizvodima");
-            System.out.println("2 za ispis svih narudbi i proizvoda u njima");
-            System.out.println("3 dohvatati narudbu po broju narudbe");
-            System.out.println("4 za  brisanje proizvodda iz odredene naudbe");
-            System.out.println("5 za dodavanje proizvoda u postojecu narudbu");
-            System.out.println("6 za brisanje narudbi i pripadajucih proizvoda");
-            System.out.println("0 za izlaz iz HibernateCRUD");
 
-            userChoice = scanner.nextInt();
-            scanner.nextLine();
-            long orderID;
-            long productID;
-            String orderNumber;
-            switch (userChoice){
-                case 1:
-                    JPACRUD.CreateOrderWithProducts();
-                case 2:
-                    JPACRUD.PrintOrderANDProducts();
-                    break;
-                case 3:
-                    System.out.println("Unesi borj nardbe");
-                    orderNumber = scanner.nextLine();
-                    ProductOrder order = JPACRUD.GetProductOrderWithProducts(orderNumber);
-                    JPACRUD.printOrderProducts(order);
-                    break;
-                case 4:
-                    System.out.println("Unesi id narudbe u kojoj se proizvod nalazi:");
-                    orderID = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.println("Unesi id prozivoda koji zelis izbrisatti");
-                    productID = scanner.nextInt();
-                    scanner.nextLine();
-                    JPACRUD.DeleteProductFromOrder(orderID,productID);
-                    break;
-                case 5:
-                    System.out.println("Unesi broj narudbe kojoj zelis dodati proizvod:");
-                    orderNumber = scanner.nextLine();
-                    System.out.println("Unesi naziv proizvoda koji zelis dodati narubi");
-                    String productName = scanner.nextLine();
-                    ProductOrder productOrder = JPACRUD.GetProductOrderWithProducts(orderNumber);
-                    Product product = JPACRUD.creteProduct(productName,productOrder);
-                    System.out.println(product.getName()+ "dodan u "+ productOrder.getOrederNumber() + " naurudbu");
-                    break;
-                case 6:
-                    System.out.println("Unesi broj narudbe koju zelis izbriaati zajedno sa proizvodima");
-                    orderNumber = scanner.nextLine();
-                    JPACRUD.deleteOrderAndProducts(orderNumber);
-                    break;
-                default:
-                    System.out.println("krivi unos");
+    }
+    public static void UnosNovogProgramaObrazovanja(String naziv, long CSVET){
+        Transaction transaction = null;
+        Session session = null;
+        try {
+            session = HibernateUtil.createHibernateSession();
+            transaction = session.beginTransaction();
+            ProgramObrazovanja programObrazovanja = new ProgramObrazovanja();
+            programObrazovanja.setNaziv(naziv);
+            programObrazovanja.setCSVET(CSVET);
+            session.persist(programObrazovanja);
+            transaction.commit();
+            System.out.println("Uspjesan unos novog programa obrazovanja");
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+
+        } finally {
+            if (session != null) {
+                session.close();
             }
 
-        }while (userChoice!=0);
+        }
 
+    }
+    public static void UpisPolaznikaUProgramObrazovanja(long IDProgramObrazovanja,long IDPolaznik){
+        Transaction transaction = null;
+        Session session = null;
+
+        try {
+            session = HibernateUtil.createHibernateSession();
+            transaction = session.beginTransaction();
+            ProgramObrazovanja program = session.get(ProgramObrazovanja.class, IDProgramObrazovanja);
+            Polaznik polaznik = session.get(Polaznik.class, IDPolaznik);
+
+            Upis upis = new Upis();
+            upis.setProgramObrazovanja(program);
+            upis.setPolaznik(polaznik);
+            session.save(upis);
+
+
+            transaction.commit();
+            System.out.println("Uspjesan upis polaznika u program obrazovanja");
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+
+        }
+    }
+    public static void PrebacivanjePolaznika(long IDNovogProgramObrazovanja,long IDUpis){
+        Transaction transaction = null;
+        Session session = null;
+
+        try {
+            session = HibernateUtil.createHibernateSession();
+            transaction = session.beginTransaction();
+            ProgramObrazovanja program = session.get(ProgramObrazovanja.class, IDNovogProgramObrazovanja);
+
+            Upis upis = session.get(Upis.class,IDUpis);
+            upis.setProgramObrazovanja(program);
+
+            session.merge(upis);
+            transaction.commit();
+            System.out.println("Uspjesan promjena programa obrazovanja");
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+
+        }
+    }
+    public static void ispisPolaznikaProgramObrazovanja(long IDProgramObrazovanja){
+        Transaction transaction = null;
+        Session session = null;
+
+        try {
+            session = HibernateUtil.createHibernateSession();
+            transaction = session.beginTransaction();
+            ProgramObrazovanja program = session.get(ProgramObrazovanja.class, IDProgramObrazovanja);
+
+            for (Upis upis : program.getUpisi()) {
+                System.out.println("Ime: "+upis.getPolaznik().getIme()+" Prezime: "+upis.getPolaznik().getPrezime()+ " Program: "+ program.getNaziv()+" CSVET: "+program.getCSVET());
+
+            }
+
+
+            transaction.commit();
+
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+
+        }
     }
 
 
